@@ -8,12 +8,19 @@ router.post("/jwt", async (req, res) => {
   try {
     const { token } = req.body;
 
+    if (!token) {
+      return res.status(401).send({
+        success: false,
+        message: "No Firebase Token",
+      });
+    }
+
     const decoded = await auth.verifyIdToken(token);
 
     const jwtToken = jwt.sign(
       {
-        email: decoded.email,
         uid: decoded.uid,
+        email: decoded.email,
       },
       process.env.JWT_SECRET,
       {
@@ -23,16 +30,20 @@ router.post("/jwt", async (req, res) => {
 
     res.cookie("token", jwtToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite:
+        process.env.NODE_ENV === "production"
+          ? "none"
+          : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).send({
+    res.send({
       success: true,
-      message: "JWT Created Successfully",
+      message: "Login Success",
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
 
     res.status(401).send({
       success: false,
@@ -44,13 +55,16 @@ router.post("/jwt", async (req, res) => {
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite:
+      process.env.NODE_ENV === "production"
+        ? "none"
+        : "lax",
   });
 
   res.send({
     success: true,
-    message: "Logged Out Successfully",
+    message: "Logout Success",
   });
 });
 

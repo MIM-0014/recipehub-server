@@ -16,7 +16,7 @@ async function connectDB() {
 
     console.log("✅ MongoDB Connected Successfully");
 
-    return client.db("recipeHubDB");
+    return client.db("recipehub");
   } catch (error) {
     console.error("❌ MongoDB Connection Failed");
     console.error(error);
